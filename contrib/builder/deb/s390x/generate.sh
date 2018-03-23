@@ -36,8 +36,7 @@ for version in "${versions[@]}"; do
 
 	EOF
 
-	extraBuildTags=
-	runcBuildTags=
+	runcBuildTags="apparmor selinux seccomp"
 
 	# this list is sorted alphabetically; please keep it that way
 	packages=(
@@ -59,18 +58,6 @@ for version in "${versions[@]}"; do
 		vim-common # tini dep
 	)
 
-	case "$suite" in
-		# s390x needs libseccomp 2.3.1
-		xenial)
-			# Ubuntu Xenial has libseccomp 2.2.3
-			runcBuildTags="apparmor selinux"
-			;;
-		*)
-			extraBuildTags+=' seccomp'
-			runcBuildTags="apparmor selinux seccomp"
-			;;
-	esac
-
 	# update and install packages
 	echo "RUN apt-get update && apt-get install -y ${packages[*]} --no-install-recommends && rm -rf /var/lib/apt/lists/*" >> "$version/Dockerfile"
 
@@ -87,7 +74,7 @@ for version in "${versions[@]}"; do
 	echo >> "$version/Dockerfile"
 
 	# print build tags in alphabetical order
-	buildTags=$( echo "apparmor selinux $extraBuildTags" | xargs -n1 | sort -n | tr '\n' ' ' | sed -e 's/[[:space:]]*$//' )
+	buildTags=$( echo "apparmor selinux seccomp" | xargs -n1 | sort -n | tr '\n' ' ' | sed -e 's/[[:space:]]*$//' )
 
 	echo "ENV DOCKER_BUILDTAGS $buildTags" >> "$version/Dockerfile"
 	echo "ENV RUNC_BUILDTAGS $runcBuildTags" >> "$version/Dockerfile"

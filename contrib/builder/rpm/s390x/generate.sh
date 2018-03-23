@@ -28,7 +28,7 @@ for version in "${versions[@]}"; do
 		from="opensuse/s390x:tumbleweed"
 		;;
 	*clefos*)
-		from="sinenomine/${distro}"
+		from="${distro}"
 		;;
 	*)
 		echo No appropriate or supported image available.
@@ -50,7 +50,6 @@ for version in "${versions[@]}"; do
 
 	echo >> "$version/Dockerfile"
 
-	extraBuildTags=''
 	runcBuildTags=
 
 	case "$from" in
@@ -88,12 +87,11 @@ for version in "${versions[@]}"; do
 
 	case "$from" in
 		*clefos*)
-			extraBuildTags+=' seccomp'
 			runcBuildTags="seccomp selinux"
 			;;
 		*opensuse*)
 			packages=( "${packages[@]/libseccomp-devel}" )
-			runcBuildTags="selinux"
+			runcBuildTags="seccomp selinux"
 			;;
 		*)
 			echo No appropriate or supported image available.
@@ -135,7 +133,7 @@ for version in "${versions[@]}"; do
 	echo >> "$version/Dockerfile"
 
 	# print build tags in alphabetical order
-	buildTags=$( echo "selinux $extraBuildTags" | xargs -n1 | sort -n | tr '\n' ' ' | sed -e 's/[[:space:]]*$//' )
+	buildTags=$( echo "selinux seccomp" | xargs -n1 | sort -n | tr '\n' ' ' | sed -e 's/[[:space:]]*$//' )
 
 	echo "ENV DOCKER_BUILDTAGS $buildTags" >> "$version/Dockerfile"
 	echo "ENV RUNC_BUILDTAGS $runcBuildTags" >> "$version/Dockerfile"
